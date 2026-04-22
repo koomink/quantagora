@@ -1,0 +1,277 @@
+# Tasks: US-Listed Securities Auto-Trading Product
+
+## Phase 0: Product and Safety Foundation
+
+- [ ] Confirm KIS Open API account setup and overseas stock API availability.
+- [ ] Confirm paper/live environment support for overseas stock orders.
+- [ ] Confirm exact overseas order types supported by KIS.
+- [ ] Confirm quote latency and real-time/delayed status for US markets.
+- [ ] Define initial leveraged/inverse ETF whitelist.
+- [ ] Define initial risk policy values.
+- [ ] Define Telegram approval expiry and message format.
+- [ ] Decide final deployment target: Vultr Seoul or Oracle Cloud.
+- [ ] Create environment variable contract for secrets.
+
+## Phase 1: Repository Restructure
+
+- [ ] Create backend FastAPI app skeleton.
+- [ ] Create frontend React + Vite + TypeScript app skeleton.
+- [ ] Add Docker Compose for backend, frontend, PostgreSQL.
+- [ ] Add configuration loader for local/paper/live environments.
+- [ ] Add structured logging.
+- [ ] Add baseline authentication for admin UI.
+- [ ] Add `.env.example`.
+- [ ] Add CI lint/test commands.
+
+## Phase 2: Database and Domain Models
+
+- [ ] Add PostgreSQL schema migration tooling.
+- [ ] Create `assets` table.
+- [ ] Create `market_quotes` table.
+- [ ] Create `candles` table.
+- [ ] Create `asset_universe_versions` table.
+- [ ] Create `asset_universe_members` table.
+- [ ] Create `signals` table.
+- [ ] Create `risk_checks` table.
+- [ ] Create `approval_requests` table.
+- [ ] Create `planned_orders` table.
+- [ ] Create `broker_orders` table.
+- [ ] Create `fills` table.
+- [ ] Create `positions` table.
+- [ ] Create `cash_snapshots` table.
+- [ ] Create `portfolio_snapshots` table.
+- [ ] Create `tax_lots` table.
+- [ ] Create `tax_events` table.
+- [ ] Create `corporate_actions` table.
+- [ ] Create `audit_logs` table.
+
+## Phase 3: KIS Broker Adapter
+
+- [ ] Implement broker adapter interface.
+- [ ] Implement KIS OAuth token flow.
+- [ ] Implement KIS token refresh.
+- [ ] Implement KIS quote fetch for overseas stocks.
+- [ ] Implement KIS candle fetch for overseas stocks.
+- [ ] Implement KIS account balance fetch.
+- [ ] Implement KIS overseas position fetch.
+- [ ] Implement KIS buying power fetch.
+- [ ] Implement KIS overseas order submission.
+- [ ] Implement KIS order cancellation.
+- [ ] Implement KIS order status lookup.
+- [ ] Implement KIS fill history lookup.
+- [ ] Normalize KIS API errors.
+- [ ] Add rate-limit handling.
+- [ ] Store raw broker responses for audit.
+- [ ] Add mocked broker adapter for local testing.
+
+## Phase 4: Market Data and Calendar
+
+- [ ] Add US market calendar module.
+- [ ] Store all timestamps in UTC.
+- [ ] Display market status in English UI.
+- [ ] Implement regular-session-only guard.
+- [ ] Implement stale data detection.
+- [ ] Implement quote snapshot persistence.
+- [ ] Implement candle backfill job.
+- [ ] Implement daily market data refresh.
+
+## Phase 5: Universe Engine
+
+- [ ] Implement candidate source from KIS market data.
+- [ ] Implement agent-recommended candidate input.
+- [ ] Add asset eligibility filter.
+- [ ] Add liquidity filter.
+- [ ] Add bid-ask spread filter.
+- [ ] Add price threshold filter.
+- [ ] Add OTC exclusion.
+- [ ] Add unsupported product exclusion.
+- [ ] Add leveraged/inverse ETF whitelist.
+- [ ] Add weekly universe versioning.
+- [ ] Add manual universe refresh API.
+- [ ] Add universe dashboard.
+
+## Phase 6: Signal Engine
+
+- [ ] Define structured signal schema.
+- [ ] Port useful technical indicator code from current project.
+- [ ] Implement trend-following signal.
+- [ ] Implement pullback signal.
+- [ ] Implement volatility regime filter.
+- [ ] Implement momentum confirmation.
+- [ ] Add same-symbol cooldown.
+- [ ] Add daily scan scheduler.
+- [ ] Store generated signals.
+- [ ] Add signal detail UI.
+
+## Phase 7: LLM Provider Layer
+
+- [ ] Add LLM provider interface.
+- [ ] Implement OpenAI provider.
+- [ ] Implement OpenRouter-compatible provider.
+- [ ] Add structured JSON response validation.
+- [ ] Add prompt templates for universe rationale.
+- [ ] Add prompt templates for trade rationale.
+- [ ] Add prompt templates for post-trade review.
+- [ ] Store LLM reports.
+- [ ] Add fallback behavior when LLM fails.
+- [ ] Ensure LLM cannot override risk decisions.
+
+## Phase 8: Risk Manager
+
+- [ ] Implement risk policy config.
+- [ ] Add account exposure check.
+- [ ] Add cash buffer check.
+- [ ] Add single-stock max weight check.
+- [ ] Add ETF max weight check.
+- [ ] Add leveraged/inverse total exposure check.
+- [ ] Add single leveraged/inverse exposure check.
+- [ ] Add daily loss limit.
+- [ ] Add weekly loss limit.
+- [ ] Add monthly loss limit.
+- [ ] Add max drawdown stop.
+- [ ] Add spread/liquidity risk check.
+- [ ] Add stale signal check.
+- [ ] Add broker/account mismatch check.
+- [ ] Add risk-exit decision output.
+- [ ] Persist every risk check.
+- [ ] Add risk dashboard.
+
+## Phase 9: Order Planner
+
+- [ ] Implement marketable limit order planner.
+- [ ] Add buy limit price calculation.
+- [ ] Add sell limit price calculation.
+- [ ] Add slippage cap configuration.
+- [ ] Add leveraged/inverse ETF slippage policy.
+- [ ] Add no-market-order default.
+- [ ] Add order expiry.
+- [ ] Add order split threshold.
+- [ ] Add avoid-open window.
+- [ ] Add avoid-close window.
+- [ ] Add planned order persistence.
+
+## Phase 10: Telegram Approval Gate
+
+- [ ] Create Telegram bot.
+- [ ] Configure allowed Telegram user IDs.
+- [ ] Implement approval request creation.
+- [ ] Implement English approval message template.
+- [ ] Add Approve button.
+- [ ] Add Reject button.
+- [ ] Add Snooze button.
+- [ ] Implement webhook endpoint.
+- [ ] Verify callback user ID.
+- [ ] Enforce approval expiry.
+- [ ] Log all approval events.
+- [ ] Add approval dashboard.
+- [ ] Add daily approval request cap.
+
+## Phase 11: Execution Service
+
+- [ ] Implement approved-order executor.
+- [ ] Implement risk-exit auto executor.
+- [ ] Prevent duplicate submissions with idempotency keys.
+- [ ] Submit orders only during regular session.
+- [ ] Poll order status.
+- [ ] Handle partial fills.
+- [ ] Cancel expired orders.
+- [ ] Notify Telegram on submission/fill/failure.
+- [ ] Persist broker order state transitions.
+- [ ] Add open orders UI.
+
+## Phase 12: Reconciliation
+
+- [ ] Sync positions after fills.
+- [ ] Sync cash after fills.
+- [ ] Sync open orders.
+- [ ] Compare internal ledger with KIS account.
+- [ ] Detect mismatches.
+- [ ] Alert on mismatches.
+- [ ] Add post-market reconciliation job.
+- [ ] Add reconciliation dashboard section.
+
+## Phase 13: Tax and Reporting
+
+- [ ] Define tax event schema.
+- [ ] Record every fill into tax ledger.
+- [ ] Store USD price and fees.
+- [ ] Store KRW converted values where available.
+- [ ] Store applied FX rate.
+- [ ] Track acquisition and disposal dates.
+- [ ] Track realized gain/loss.
+- [ ] Track dividends/distributions.
+- [ ] Track withholding tax where available.
+- [ ] Implement split/reverse split adjustments.
+- [ ] Implement ticker change handling.
+- [ ] Add annual tax summary screen.
+- [ ] Add CSV export.
+- [ ] Add Excel export.
+- [ ] Add broker statement reconciliation checklist.
+
+## Phase 14: Corporate Actions
+
+- [ ] Add corporate action data ingestion strategy.
+- [ ] Detect dividends/distributions.
+- [ ] Detect split/reverse split.
+- [ ] Detect ticker changes.
+- [ ] Pause new orders for affected symbols.
+- [ ] Notify user of corporate action review requirement.
+- [ ] Update tax ledger after corporate action adjustment.
+
+## Phase 15: Frontend UI
+
+- [ ] Create English-only layout.
+- [ ] Build dashboard page.
+- [ ] Build universe page.
+- [ ] Build signal page.
+- [ ] Build approval page.
+- [ ] Build order page.
+- [ ] Build portfolio page.
+- [ ] Build risk page.
+- [ ] Build tax page.
+- [ ] Build settings page.
+- [ ] Add live/paper mode indicator.
+- [ ] Add kill switch control.
+- [ ] Add responsive layout.
+
+## Phase 16: Deployment
+
+- [ ] Create production Docker Compose file.
+- [ ] Configure Nginx or Caddy.
+- [ ] Configure TLS.
+- [ ] Configure systemd service or Docker restart policy.
+- [ ] Configure database backup.
+- [ ] Configure log rotation.
+- [ ] Configure health checks.
+- [ ] Configure Telegram webhook URL.
+- [ ] Deploy to Vultr Seoul MVP server.
+- [ ] Document Oracle Cloud alternative deployment.
+
+## Phase 17: Testing
+
+- [ ] Unit test risk manager.
+- [ ] Unit test order planner.
+- [ ] Unit test approval expiry.
+- [ ] Unit test tax ledger calculations.
+- [ ] Unit test KIS error normalization.
+- [ ] Integration test mocked broker order flow.
+- [ ] Integration test Telegram approval flow.
+- [ ] Integration test reconciliation mismatch.
+- [ ] Backtest initial strategy.
+- [ ] Paper trade for minimum 4 weeks.
+- [ ] Review all live-mode safety gates before enabling live orders.
+
+## Phase 18: Live Readiness Checklist
+
+- [ ] KIS live credentials configured.
+- [ ] Telegram user allowlist verified.
+- [ ] Kill switch tested.
+- [ ] Regular-session guard tested.
+- [ ] Market order disabled by default.
+- [ ] Risk exits tested in paper mode.
+- [ ] New-entry orders require approval.
+- [ ] Tax ledger export tested.
+- [ ] Daily backup verified.
+- [ ] Reconciliation alert tested.
+- [ ] First live trade size capped to minimal notional.
+
