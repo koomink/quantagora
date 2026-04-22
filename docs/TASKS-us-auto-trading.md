@@ -66,14 +66,14 @@
 
 ## Phase 4: Market Data and Calendar
 
-- [ ] Add US market calendar module.
-- [ ] Store all timestamps in UTC.
-- [ ] Display market status in English UI.
-- [ ] Implement regular-session-only guard.
-- [ ] Implement stale data detection.
-- [ ] Implement quote snapshot persistence.
-- [ ] Implement candle backfill job.
-- [ ] Implement daily market data refresh.
+- [x] Add US market calendar module.
+- [x] Store all timestamps in UTC.
+- [x] Display market status in English UI.
+- [x] Implement regular-session-only guard.
+- [x] Implement stale data detection.
+- [x] Implement quote snapshot persistence.
+- [x] Implement candle backfill job.
+- [x] Implement daily market data refresh.
 
 ## Phase 5: Universe Engine
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 from enum import Enum
+from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -65,6 +66,7 @@ class Quote(BaseModel):
     last: Decimal
     currency: str = "USD"
     quote_time: datetime
+    raw_response: dict[str, Any] = Field(default_factory=dict)
 
 
 class Signal(BaseModel):

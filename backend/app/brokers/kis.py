@@ -128,6 +128,7 @@ class KISBrokerAdapter(BrokerAdapter):
             last=last,
             currency="USD",
             quote_time=datetime.now(UTC),
+            raw_response=response.raw(),
         )
 
     async def get_candles(

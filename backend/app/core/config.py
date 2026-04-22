@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     kis_timeout_seconds: float = 10.0
     kis_rate_limit_per_second: float = 5.0
 
+    market_quote_stale_seconds: int = 900
+    market_daily_candle_lookback_days: int = 365
+    market_data_default_symbols: str = "SPY,QQQ,TQQQ,SQQQ"
+    market_extra_closed_dates: str = ""
+    market_extra_early_close_dates: str = ""
+
     telegram_bot_token: str = ""
     telegram_allowed_user_ids: str = ""
     telegram_webhook_secret: str = ""
@@ -65,6 +71,30 @@ class Settings(BaseSettings):
             if raw_id:
                 ids.append(int(raw_id))
         return ids
+
+    @property
+    def market_default_symbol_list(self) -> list[str]:
+        return [
+            symbol.strip().upper()
+            for symbol in self.market_data_default_symbols.split(",")
+            if symbol.strip()
+        ]
+
+    @property
+    def market_extra_closed_date_list(self) -> list[str]:
+        return [
+            date_value.strip()
+            for date_value in self.market_extra_closed_dates.split(",")
+            if date_value.strip()
+        ]
+
+    @property
+    def market_extra_early_close_date_list(self) -> list[str]:
+        return [
+            date_value.strip()
+            for date_value in self.market_extra_early_close_dates.split(",")
+            if date_value.strip()
+        ]
 
     @property
     def kis_effective_base_url(self) -> str:

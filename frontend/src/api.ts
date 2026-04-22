@@ -1,5 +1,6 @@
 import type {
   ApprovalList,
+  MarketStatus,
   PortfolioSummary,
   RiskStatus,
   RuntimeSettings,
@@ -29,6 +30,10 @@ export function fetchRuntimeSettings(adminToken: string): Promise<RuntimeSetting
 
 export function fetchPortfolioSummary(adminToken: string): Promise<PortfolioSummary> {
   return request<PortfolioSummary>("/api/portfolio/summary", adminToken);
+}
+
+export function fetchMarketStatus(adminToken: string): Promise<MarketStatus> {
+  return request<MarketStatus>("/api/market/status", adminToken);
 }
 
 export function fetchUniverse(adminToken: string): Promise<UniverseVersion> {

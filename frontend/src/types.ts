@@ -7,6 +7,22 @@ export type RuntimeSettings = {
   tradingSession: string;
 };
 
+export type MarketStatus = {
+  exchange: string;
+  timezone: string;
+  nowUtc: string;
+  nowLocal: string;
+  marketDate: string;
+  state: string;
+  isOpen: boolean;
+  regularSessionOnlyAllowed: boolean;
+  reason: string;
+  sessionOpenUtc: string | null;
+  sessionCloseUtc: string | null;
+  nextOpenUtc: string;
+  nextCloseUtc: string;
+};
+
 export type PortfolioSummary = {
   asOf: string;
   baseCurrency: string;

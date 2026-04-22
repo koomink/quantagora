@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   fetchApprovals,
+  fetchMarketStatus,
   fetchPortfolioSummary,
   fetchRiskStatus,
   fetchRuntimeSettings,
@@ -9,6 +10,7 @@ import {
 } from "./api";
 import type {
   ApprovalList,
+  MarketStatus,
   PortfolioSummary,
   RiskStatus,
   RuntimeSettings,
@@ -17,6 +19,7 @@ import type {
 
 type DashboardData = {
   runtime: RuntimeSettings;
+  market: MarketStatus;
   portfolio: PortfolioSummary;
   universe: UniverseVersion;
   risk: RiskStatus;
@@ -40,6 +43,15 @@ function Icon({ name }: { name: "refresh" | "shield" | "bolt" | "check" }) {
   );
 }
 
+function formatDateTime(value?: string | null) {
+  if (!value) return "Not scheduled";
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZoneName: "short"
+  }).format(new Date(value));
+}
+
 function App() {
   const [adminToken, setAdminToken] = useState(() => {
     return localStorage.getItem("quantagora.adminToken") ?? "dev-admin-token";
@@ -61,14 +73,15 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const [runtime, portfolio, universe, risk, approvals] = await Promise.all([
+      const [runtime, market, portfolio, universe, risk, approvals] = await Promise.all([
         fetchRuntimeSettings(nextToken),
+        fetchMarketStatus(nextToken),
         fetchPortfolioSummary(nextToken),
         fetchUniverse(nextToken),
         fetchRiskStatus(nextToken),
         fetchApprovals(nextToken)
       ]);
-      setData({ runtime, portfolio, universe, risk, approvals });
+      setData({ runtime, market, portfolio, universe, risk, approvals });
       localStorage.setItem("quantagora.adminToken", nextToken);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard.");
@@ -124,9 +137,11 @@ function App() {
 
         <section className="status-grid" aria-busy={isLoading}>
           <article className="metric-card">
-            <span className="metric-label">Broker Mode</span>
-            <strong>{data?.runtime.brokerMode ?? "Loading"}</strong>
-            <small>{data?.runtime.tradingSession ?? "US regular session only"}</small>
+            <span className="metric-label">Market Status</span>
+            <strong className={data?.market.isOpen ? "market-open" : "market-closed"}>
+              {data?.market.state.replaceAll("_", " ") ?? "Loading"}
+            </strong>
+            <small>{data?.market.reason ?? "US regular session only"}</small>
           </article>
           <article className="metric-card">
             <span className="metric-label">Gross Exposure</span>
@@ -211,6 +226,12 @@ function App() {
                 Risk exits may run automatically
               </li>
             </ul>
+            <div className="session-box">
+              <span>Next regular close</span>
+              <strong>{formatDateTime(data?.market.nextCloseUtc)}</strong>
+              <span>Next regular open</span>
+              <strong>{formatDateTime(data?.market.nextOpenUtc)}</strong>
+            </div>
             <p className="timestamp">Last updated: {lastUpdated}</p>
           </article>
         </section>
