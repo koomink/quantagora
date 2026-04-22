@@ -9,6 +9,7 @@ env/
 
 .env
 .env.*
+!.env.example
 
 .pytest_cache/
 .mypy_cache/
@@ -17,3 +18,13 @@ env/
 build/
 dist/
 *.egg-info/
+node_modules/
+.vite/
+coverage/
+htmlcov/
+.coverage
+backend/.venv/
+backend/.venv*/
+frontend/node_modules/
+frontend/dist/
+*.log

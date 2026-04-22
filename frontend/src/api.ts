@@ -1,0 +1,44 @@
+import type {
+  ApprovalList,
+  PortfolioSummary,
+  RiskStatus,
+  RuntimeSettings,
+  UniverseVersion
+} from "./types";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+async function request<T>(path: string, adminToken: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      "X-Admin-Token": adminToken
+    }
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || `Request failed: ${response.status}`);
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export function fetchRuntimeSettings(adminToken: string): Promise<RuntimeSettings> {
+  return request<RuntimeSettings>("/api/settings/runtime", adminToken);
+}
+
+export function fetchPortfolioSummary(adminToken: string): Promise<PortfolioSummary> {
+  return request<PortfolioSummary>("/api/portfolio/summary", adminToken);
+}
+
+export function fetchUniverse(adminToken: string): Promise<UniverseVersion> {
+  return request<UniverseVersion>("/api/universe/current", adminToken);
+}
+
+export function fetchRiskStatus(adminToken: string): Promise<RiskStatus> {
+  return request<RiskStatus>("/api/risk/status", adminToken);
+}
+
+export function fetchApprovals(adminToken: string): Promise<ApprovalList> {
+  return request<ApprovalList>("/api/approvals", adminToken);
+}

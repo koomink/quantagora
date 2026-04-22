@@ -14,14 +14,14 @@
 
 ## Phase 1: Repository Restructure
 
-- [ ] Create backend FastAPI app skeleton.
-- [ ] Create frontend React + Vite + TypeScript app skeleton.
-- [ ] Add Docker Compose for backend, frontend, PostgreSQL.
-- [ ] Add configuration loader for local/paper/live environments.
-- [ ] Add structured logging.
-- [ ] Add baseline authentication for admin UI.
-- [ ] Add `.env.example`.
-- [ ] Add CI lint/test commands.
+- [x] Create backend FastAPI app skeleton.
+- [x] Create frontend React + Vite + TypeScript app skeleton.
+- [x] Add Docker Compose for backend, frontend, PostgreSQL.
+- [x] Add configuration loader for local/paper/live environments.
+- [x] Add structured logging.
+- [x] Add baseline authentication for admin UI.
+- [x] Add `.env.example`.
+- [x] Add CI lint/test commands.
 
 ## Phase 2: Database and Domain Models
 
@@ -274,4 +274,3 @@
 - [ ] Daily backup verified.
 - [ ] Reconciliation alert tested.
 - [ ] First live trade size capped to minimal notional.
-
