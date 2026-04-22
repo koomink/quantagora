@@ -1,7 +1,7 @@
 PYTHON ?= python3.11
 BACKEND_VENV ?= backend/.venv311
 
-.PHONY: backend-venv backend-dev frontend-dev backend-check backend-lint frontend-build check
+.PHONY: backend-venv backend-dev frontend-dev db-upgrade db-downgrade db-revision backend-check backend-lint frontend-build check
 
 backend-venv:
 	$(PYTHON) -m venv $(BACKEND_VENV)
@@ -12,6 +12,15 @@ backend-dev:
 
 frontend-dev:
 	cd frontend && npm run dev -- --host 0.0.0.0
+
+db-upgrade:
+	cd backend && ../$(BACKEND_VENV)/bin/alembic upgrade head
+
+db-downgrade:
+	cd backend && ../$(BACKEND_VENV)/bin/alembic downgrade -1
+
+db-revision:
+	cd backend && ../$(BACKEND_VENV)/bin/alembic revision --autogenerate -m "$(m)"
 
 backend-check:
 	cd backend && ../$(BACKEND_VENV)/bin/python -m py_compile $$(find app -name '*.py')

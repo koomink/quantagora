@@ -25,25 +25,25 @@
 
 ## Phase 2: Database and Domain Models
 
-- [ ] Add PostgreSQL schema migration tooling.
-- [ ] Create `assets` table.
-- [ ] Create `market_quotes` table.
-- [ ] Create `candles` table.
-- [ ] Create `asset_universe_versions` table.
-- [ ] Create `asset_universe_members` table.
-- [ ] Create `signals` table.
-- [ ] Create `risk_checks` table.
-- [ ] Create `approval_requests` table.
-- [ ] Create `planned_orders` table.
-- [ ] Create `broker_orders` table.
-- [ ] Create `fills` table.
-- [ ] Create `positions` table.
-- [ ] Create `cash_snapshots` table.
-- [ ] Create `portfolio_snapshots` table.
-- [ ] Create `tax_lots` table.
-- [ ] Create `tax_events` table.
-- [ ] Create `corporate_actions` table.
-- [ ] Create `audit_logs` table.
+- [x] Add PostgreSQL schema migration tooling.
+- [x] Create `assets` table.
+- [x] Create `market_quotes` table.
+- [x] Create `candles` table.
+- [x] Create `asset_universe_versions` table.
+- [x] Create `asset_universe_members` table.
+- [x] Create `signals` table.
+- [x] Create `risk_checks` table.
+- [x] Create `approval_requests` table.
+- [x] Create `planned_orders` table.
+- [x] Create `broker_orders` table.
+- [x] Create `fills` table.
+- [x] Create `positions` table.
+- [x] Create `cash_snapshots` table.
+- [x] Create `portfolio_snapshots` table.
+- [x] Create `tax_lots` table.
+- [x] Create `tax_events` table.
+- [x] Create `corporate_actions` table.
+- [x] Create `audit_logs` table.
 
 ## Phase 3: KIS Broker Adapter
 
