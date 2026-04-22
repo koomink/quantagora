@@ -47,22 +47,22 @@
 
 ## Phase 3: KIS Broker Adapter
 
-- [ ] Implement broker adapter interface.
-- [ ] Implement KIS OAuth token flow.
-- [ ] Implement KIS token refresh.
-- [ ] Implement KIS quote fetch for overseas stocks.
-- [ ] Implement KIS candle fetch for overseas stocks.
-- [ ] Implement KIS account balance fetch.
-- [ ] Implement KIS overseas position fetch.
-- [ ] Implement KIS buying power fetch.
-- [ ] Implement KIS overseas order submission.
-- [ ] Implement KIS order cancellation.
-- [ ] Implement KIS order status lookup.
-- [ ] Implement KIS fill history lookup.
-- [ ] Normalize KIS API errors.
-- [ ] Add rate-limit handling.
-- [ ] Store raw broker responses for audit.
-- [ ] Add mocked broker adapter for local testing.
+- [x] Implement broker adapter interface.
+- [x] Implement KIS OAuth token flow.
+- [x] Implement KIS token refresh.
+- [x] Implement KIS quote fetch for overseas stocks.
+- [x] Implement KIS candle fetch for overseas stocks.
+- [x] Implement KIS account balance fetch.
+- [x] Implement KIS overseas position fetch.
+- [x] Implement KIS buying power fetch.
+- [x] Implement KIS overseas order submission.
+- [x] Implement KIS order cancellation.
+- [x] Implement KIS order status lookup.
+- [x] Implement KIS fill history lookup.
+- [x] Normalize KIS API errors.
+- [x] Add rate-limit handling.
+- [x] Store raw broker responses for audit.
+- [x] Add mocked broker adapter for local testing.
 
 ## Phase 4: Market Data and Calendar
 

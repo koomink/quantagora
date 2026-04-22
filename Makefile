@@ -1,7 +1,7 @@
 PYTHON ?= python3.11
 BACKEND_VENV ?= backend/.venv311
 
-.PHONY: backend-venv backend-dev frontend-dev db-upgrade db-downgrade db-revision backend-check backend-lint frontend-build check
+.PHONY: backend-venv backend-dev frontend-dev db-upgrade db-downgrade db-revision backend-check backend-lint backend-test frontend-build check
 
 backend-venv:
 	$(PYTHON) -m venv $(BACKEND_VENV)
@@ -26,9 +26,12 @@ backend-check:
 	cd backend && ../$(BACKEND_VENV)/bin/python -m py_compile $$(find app -name '*.py')
 
 backend-lint:
-	$(BACKEND_VENV)/bin/ruff check backend/app
+	$(BACKEND_VENV)/bin/ruff check backend/app backend/tests
+
+backend-test:
+	cd backend && ../$(BACKEND_VENV)/bin/pytest
 
 frontend-build:
 	cd frontend && npm run build
 
-check: backend-lint backend-check frontend-build
+check: backend-lint backend-check backend-test frontend-build

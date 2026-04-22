@@ -36,8 +36,12 @@ class Settings(BaseSettings):
     kis_app_secret: str = ""
     kis_account_no: str = ""
     kis_account_product_code: str = ""
-    kis_base_url: str = "https://openapi.koreainvestment.com:9443"
+    kis_base_url: str = ""
+    kis_live_base_url: str = "https://openapi.koreainvestment.com:9443"
+    kis_paper_base_url: str = "https://openapivts.koreainvestment.com:29443"
     kis_mode: KisMode = KisMode.PAPER
+    kis_timeout_seconds: float = 10.0
+    kis_rate_limit_per_second: float = 5.0
 
     telegram_bot_token: str = ""
     telegram_allowed_user_ids: str = ""
@@ -61,6 +65,28 @@ class Settings(BaseSettings):
             if raw_id:
                 ids.append(int(raw_id))
         return ids
+
+    @property
+    def kis_effective_base_url(self) -> str:
+        if self.kis_base_url:
+            return self.kis_base_url.rstrip("/")
+        if self.kis_mode == KisMode.LIVE:
+            return self.kis_live_base_url.rstrip("/")
+        return self.kis_paper_base_url.rstrip("/")
+
+    @property
+    def kis_cano(self) -> str:
+        account_no = self.kis_account_no.replace("-", "").strip()
+        return account_no[:8]
+
+    @property
+    def kis_product_code(self) -> str:
+        if self.kis_account_product_code:
+            return self.kis_account_product_code.strip()
+        account_no = self.kis_account_no.replace("-", "").strip()
+        if len(account_no) >= 10:
+            return account_no[8:10]
+        return ""
 
 
 @lru_cache
