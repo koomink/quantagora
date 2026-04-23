@@ -6,6 +6,8 @@ import {
   fetchPortfolioSummary,
   fetchRiskStatus,
   fetchRuntimeSettings,
+  fetchSignals,
+  scanSignals,
   fetchUniverse,
   refreshUniverse
 } from "./api";
@@ -15,6 +17,8 @@ import type {
   PortfolioSummary,
   RiskStatus,
   RuntimeSettings,
+  SignalList,
+  SignalRecord,
   UniverseVersion
 } from "./types";
 
@@ -23,6 +27,7 @@ type DashboardData = {
   market: MarketStatus;
   portfolio: PortfolioSummary;
   universe: UniverseVersion;
+  signals: SignalList;
   risk: RiskStatus;
   approvals: ApprovalList;
 };
@@ -65,6 +70,16 @@ function formatDollarMetric(value?: string | null) {
   }).format(numeric);
 }
 
+function formatPercent(value?: number | null) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "N/A";
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+function formatNumber(value?: number | null) {
+  if (value === null || value === undefined || Number.isNaN(value)) return "N/A";
+  return value.toFixed(2);
+}
+
 function App() {
   const [adminToken, setAdminToken] = useState(() => {
     return localStorage.getItem("quantagora.adminToken") ?? "dev-admin-token";
@@ -73,6 +88,8 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshingUniverse, setIsRefreshingUniverse] = useState(false);
+  const [isScanningSignals, setIsScanningSignals] = useState(false);
+  const [selectedSignalId, setSelectedSignalId] = useState<string | null>(null);
 
   const lastUpdated = useMemo(() => {
     if (!data) return "Not loaded";
@@ -87,7 +104,8 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const [runtime, market, portfolio, universe, risk, approvals] = await Promise.all([
+      const [signals, runtime, market, portfolio, universe, risk, approvals] = await Promise.all([
+        fetchSignals(nextToken),
         fetchRuntimeSettings(nextToken),
         fetchMarketStatus(nextToken),
         fetchPortfolioSummary(nextToken),
@@ -95,7 +113,16 @@ function App() {
         fetchRiskStatus(nextToken),
         fetchApprovals(nextToken)
       ]);
-      setData({ runtime, market, portfolio, universe, risk, approvals });
+      setData({
+        runtime,
+        market,
+        portfolio,
+        universe,
+        signals,
+        risk,
+        approvals
+      });
+      setSelectedSignalId(signals.items[0]?.signalId ?? null);
       localStorage.setItem("quantagora.adminToken", nextToken);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard.");
@@ -119,9 +146,31 @@ function App() {
     }
   }
 
+  async function handleSignalScan() {
+    setIsScanningSignals(true);
+    setError(null);
+    try {
+      const signals = await scanSignals(adminToken);
+      setData((current) => (current ? { ...current, signals } : current));
+      setSelectedSignalId(signals.items[0]?.signalId ?? null);
+    } catch (scanError) {
+      setError(scanError instanceof Error ? scanError.message : "Unable to scan signals.");
+    } finally {
+      setIsScanningSignals(false);
+    }
+  }
+
   useEffect(() => {
     void loadDashboard();
   }, []);
+
+  const selectedSignal = useMemo<SignalRecord | null>(() => {
+    if (!data?.signals.items.length) return null;
+    return (
+      data.signals.items.find((signal) => signal.signalId === selectedSignalId) ??
+      data.signals.items[0]
+    );
+  }, [data?.signals.items, selectedSignalId]);
 
   return (
     <main className="shell">
@@ -191,6 +240,11 @@ function App() {
             <span className="metric-label">Universe Assets</span>
             <strong>{data?.universe.members.length ?? 0}</strong>
             <small>{data?.universe.version_id ?? "Loading"}</small>
+          </article>
+          <article className="metric-card">
+            <span className="metric-label">Signal Candidates</span>
+            <strong>{data?.signals.summary.activeCount ?? 0}</strong>
+            <small>{data?.signals.status ?? "Loading"}</small>
           </article>
         </section>
 
@@ -293,6 +347,99 @@ function App() {
               <strong>{formatDateTime(data?.market.nextOpenUtc)}</strong>
             </div>
             <p className="timestamp">Last updated: {lastUpdated}</p>
+          </article>
+        </section>
+
+        <section className="signals-grid">
+          <article className="panel">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Signal engine</p>
+                <h2>Latest Candidates</h2>
+              </div>
+              <button
+                className="text-button"
+                disabled={isScanningSignals}
+                onClick={() => void handleSignalScan()}
+                type="button"
+              >
+                <Icon name="refresh" />
+                {isScanningSignals ? "Scanning" : "Scan"}
+              </button>
+            </div>
+            <div className="signal-list">
+              {data?.signals.items.length ? (
+                data.signals.items.map((signal) => (
+                  <button
+                    className={
+                      selectedSignal?.signalId === signal.signalId
+                        ? "signal-row active"
+                        : "signal-row"
+                    }
+                    key={signal.signalId}
+                    onClick={() => setSelectedSignalId(signal.signalId)}
+                    type="button"
+                  >
+                    <span>{signal.symbol}</span>
+                    <span>{signal.strategy.replaceAll("_", " ")}</span>
+                    <span>{formatPercent(signal.confidence)}</span>
+                    <span>{signal.regime.state ?? "unknown"}</span>
+                    <span>{formatDateTime(signal.generatedAt)}</span>
+                  </button>
+                ))
+              ) : (
+                <div className="empty-state">No stored signal candidates.</div>
+              )}
+            </div>
+          </article>
+
+          <article className="panel">
+            <div className="panel-header compact">
+              <h2>Signal Detail</h2>
+              <Icon name="bolt" />
+            </div>
+            {selectedSignal ? (
+              <div className="signal-detail">
+                <div className="signal-detail-top">
+                  <strong>{selectedSignal.symbol}</strong>
+                  <span>{selectedSignal.strategy.replaceAll("_", " ")}</span>
+                </div>
+                <div className="policy-list">
+                  <span>Action</span>
+                  <strong>{selectedSignal.action}</strong>
+                  <span>Confidence</span>
+                  <strong>{formatPercent(selectedSignal.confidence)}</strong>
+                  <span>Target Weight</span>
+                  <strong>{formatPercent(selectedSignal.targetWeight)}</strong>
+                  <span>Horizon</span>
+                  <strong>{selectedSignal.horizon.replaceAll("_", " ")}</strong>
+                  <span>Expires</span>
+                  <strong>{formatDateTime(selectedSignal.expiresAt)}</strong>
+                </div>
+                <p>{selectedSignal.rationale}</p>
+                <div className="signal-meta-grid">
+                  <span>RSI 14</span>
+                  <strong>{formatNumber(selectedSignal.indicators.rsi14)}</strong>
+                  <span>ROC 20</span>
+                  <strong>{formatNumber(selectedSignal.indicators.roc20)}</strong>
+                  <span>MACD Hist</span>
+                  <strong>{formatNumber(selectedSignal.indicators.macd_hist)}</strong>
+                  <span>Realized Vol 20</span>
+                  <strong>{formatPercent(selectedSignal.indicators.realized_vol20)}</strong>
+                  <span>ATR 14 %</span>
+                  <strong>{formatPercent(selectedSignal.indicators.atr14_pct)}</strong>
+                  <span>Regime</span>
+                  <strong>{selectedSignal.regime.state ?? "unknown"}</strong>
+                </div>
+                <div className="rejection-list">
+                  <span>Invalidation</span>
+                  <small>{selectedSignal.invalidation}</small>
+                  <small>{selectedSignal.regime.reason ?? "No regime note."}</small>
+                </div>
+              </div>
+            ) : (
+              <div className="empty-state">Select a candidate to inspect its signal details.</div>
+            )}
           </article>
         </section>
       </section>

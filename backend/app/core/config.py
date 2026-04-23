@@ -62,6 +62,16 @@ class Settings(BaseSettings):
     universe_liquidity_lookback_days: int = 60
     universe_leveraged_inverse_whitelist: str = "TQQQ,SQQQ,SOXL,SOXS,UPRO,SPXU"
 
+    signal_lookback_days: int = 260
+    signal_min_history_days: int = 200
+    signal_expiry_days: int = 5
+    signal_pullback_lookback_days: int = 5
+    signal_scan_hour_utc: int = 21
+    signal_scan_minute_utc: int = 15
+    signal_scheduler_enabled: bool = False
+    signal_volatility_max_annualized: float = 0.65
+    signal_leveraged_volatility_max_annualized: float = 1.25
+
     telegram_bot_token: str = ""
     telegram_allowed_user_ids: str = ""
     telegram_webhook_secret: str = ""

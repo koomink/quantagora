@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+from app.services.scheduler import start_scheduler, stop_scheduler
 
 
 def create_app() -> FastAPI:
@@ -23,6 +24,15 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(api_router)
+
+    @app.on_event("startup")
+    def on_startup() -> None:
+        start_scheduler(app)
+
+    @app.on_event("shutdown")
+    def on_shutdown() -> None:
+        stop_scheduler(app)
+
     return app
 
 

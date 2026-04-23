@@ -92,16 +92,16 @@
 
 ## Phase 6: Signal Engine
 
-- [ ] Define structured signal schema.
-- [ ] Port useful technical indicator code from current project.
-- [ ] Implement trend-following signal.
-- [ ] Implement pullback signal.
-- [ ] Implement volatility regime filter.
-- [ ] Implement momentum confirmation.
-- [ ] Add same-symbol cooldown.
-- [ ] Add daily scan scheduler.
-- [ ] Store generated signals.
-- [ ] Add signal detail UI.
+- [x] Define structured signal schema.
+- [x] Port useful technical indicator code from current project.
+- [x] Implement trend-following signal.
+- [x] Implement pullback signal.
+- [x] Implement volatility regime filter.
+- [x] Implement momentum confirmation.
+- [x] Add same-symbol cooldown.
+- [x] Add daily scan scheduler.
+- [x] Store generated signals.
+- [x] Add signal detail UI.
 
 ## Phase 7: LLM Provider Layer
 

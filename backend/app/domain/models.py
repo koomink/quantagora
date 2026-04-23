@@ -76,6 +76,28 @@ class Quote(BaseModel):
     raw_response: dict[str, Any] = Field(default_factory=dict)
 
 
+class SignalIndicators(BaseModel):
+    sma20: float | None = None
+    sma50: float | None = None
+    sma200: float | None = None
+    rsi14: float | None = None
+    roc20: float | None = None
+    macd: float | None = None
+    macd_signal: float | None = None
+    macd_hist: float | None = None
+    atr14_pct: float | None = None
+    realized_vol20: float | None = None
+
+
+class SignalRegime(BaseModel):
+    benchmark_symbol: str
+    state: str
+    reason: str
+    benchmark_close: float | None = None
+    benchmark_sma200: float | None = None
+    benchmark_realized_vol20: float | None = None
+
+
 class Signal(BaseModel):
     symbol: str
     action: TradeAction
@@ -85,6 +107,13 @@ class Signal(BaseModel):
     rationale: str
     invalidation: str
     generated_at: datetime
+    signal_type: str = "trend_following"
+    source: str = "signal_engine"
+    expires_at: datetime | None = None
+    status: str = "new"
+    indicators: SignalIndicators | None = None
+    regime: SignalRegime | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class ApprovalRequest(BaseModel):

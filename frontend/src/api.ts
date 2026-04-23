@@ -4,6 +4,7 @@ import type {
   PortfolioSummary,
   RiskStatus,
   RuntimeSettings,
+  SignalList,
   UniverseVersion
 } from "./types";
 
@@ -59,6 +60,19 @@ export function refreshUniverse(adminToken: string): Promise<UniverseVersion> {
 
 export function fetchRiskStatus(adminToken: string): Promise<RiskStatus> {
   return request<RiskStatus>("/api/risk/status", adminToken);
+}
+
+export function fetchSignals(adminToken: string): Promise<SignalList> {
+  return request<SignalList>("/api/signals", adminToken);
+}
+
+export function scanSignals(adminToken: string): Promise<SignalList> {
+  return request<SignalList>("/api/signals/scan", adminToken, {
+    method: "POST",
+    body: JSON.stringify({
+      ignore_cooldown: false
+    })
+  });
 }
 
 export function fetchApprovals(adminToken: string): Promise<ApprovalList> {

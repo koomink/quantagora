@@ -77,6 +77,50 @@ export type UniverseVersion = {
   members: UniverseMember[];
 };
 
+export type SignalRecord = {
+  signalId: string;
+  symbol: string;
+  action: string;
+  strategy: string;
+  horizon: string;
+  confidence: number;
+  targetWeight: number;
+  source: string;
+  status: string;
+  rationale: string;
+  invalidation: string;
+  generatedAt: string;
+  expiresAt: string;
+  indicators: {
+    sma20?: number | null;
+    sma50?: number | null;
+    sma200?: number | null;
+    rsi14?: number | null;
+    roc20?: number | null;
+    macd?: number | null;
+    macd_signal?: number | null;
+    macd_hist?: number | null;
+    atr14_pct?: number | null;
+    realized_vol20?: number | null;
+  };
+  regime: {
+    benchmark_symbol?: string;
+    state?: string;
+    reason?: string;
+  };
+  metadata: Record<string, unknown>;
+};
+
+export type SignalList = {
+  items: SignalRecord[];
+  status: string;
+  summary: {
+    count: number;
+    activeCount: number;
+    expiredCount: number;
+  };
+};
+
 export type RiskStatus = {
   state: string;
   newEntriesAllowed: boolean;
