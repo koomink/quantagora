@@ -1,3 +1,4 @@
+from decimal import Decimal
 from enum import Enum
 from functools import lru_cache
 
@@ -49,6 +50,18 @@ class Settings(BaseSettings):
     market_extra_closed_dates: str = ""
     market_extra_early_close_dates: str = ""
 
+    universe_seed_symbols: str = (
+        "SPY,QQQ,DIA,IWM,VTI,TLT,GLD,XLK,XLF,XLV,XLE,XLI,XLY,XLP,SMH,"
+        "TQQQ,SQQQ,SOXL,SOXS,UPRO,SPXU,AAPL,MSFT,NVDA,AMZN,GOOGL,META,TSLA"
+    )
+    universe_max_members: int = 30
+    universe_min_price_usd: Decimal = Decimal("5")
+    universe_max_price_usd: Decimal = Decimal("1000")
+    universe_min_avg_dollar_volume_usd: Decimal = Decimal("50000000")
+    universe_max_bid_ask_spread_bps: Decimal = Decimal("50")
+    universe_liquidity_lookback_days: int = 60
+    universe_leveraged_inverse_whitelist: str = "TQQQ,SQQQ,SOXL,SOXS,UPRO,SPXU"
+
     telegram_bot_token: str = ""
     telegram_allowed_user_ids: str = ""
     telegram_webhook_secret: str = ""
@@ -95,6 +108,22 @@ class Settings(BaseSettings):
             for date_value in self.market_extra_early_close_dates.split(",")
             if date_value.strip()
         ]
+
+    @property
+    def universe_seed_symbol_list(self) -> list[str]:
+        return [
+            symbol.strip().upper()
+            for symbol in self.universe_seed_symbols.split(",")
+            if symbol.strip()
+        ]
+
+    @property
+    def universe_leveraged_inverse_whitelist_set(self) -> set[str]:
+        return {
+            symbol.strip().upper()
+            for symbol in self.universe_leveraged_inverse_whitelist.split(",")
+            if symbol.strip()
+        }
 
     @property
     def kis_effective_base_url(self) -> str:

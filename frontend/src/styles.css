@@ -149,6 +149,12 @@ h2 {
   cursor: pointer;
 }
 
+.icon-button:disabled,
+.text-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .icon-button {
   display: grid;
   place-items: center;
@@ -185,7 +191,7 @@ h2 {
 
 .status-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 18px;
 }
@@ -254,9 +260,19 @@ h2 {
   gap: 8px;
 }
 
+.universe-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: -6px 0 14px;
+  color: #607066;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .asset-row {
   display: grid;
-  grid-template-columns: 56px 92px 150px minmax(220px, 1fr);
+  grid-template-columns: 56px 92px 140px 120px minmax(220px, 1fr);
   gap: 12px;
   align-items: center;
   min-height: 48px;
@@ -271,6 +287,24 @@ h2 {
   color: #607066;
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.rejection-list {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid #e2e8e3;
+  margin-top: 16px;
+  padding-top: 14px;
+}
+
+.rejection-list span {
+  color: #607066;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.rejection-list small {
+  color: #7d4a28;
 }
 
 .risk-state {
@@ -349,6 +383,7 @@ h2 {
     grid-template-columns: 44px 80px 1fr;
   }
 
+  .asset-row span:nth-child(4),
   .asset-row span:last-child {
     grid-column: 1 / -1;
   }

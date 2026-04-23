@@ -9,10 +9,17 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
-async function request<T>(path: string, adminToken: string): Promise<T> {
+async function request<T>(
+  path: string,
+  adminToken: string,
+  options: RequestInit = {}
+): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
     headers: {
-      "X-Admin-Token": adminToken
+      "Content-Type": "application/json",
+      "X-Admin-Token": adminToken,
+      ...options.headers
     }
   });
 
@@ -38,6 +45,16 @@ export function fetchMarketStatus(adminToken: string): Promise<MarketStatus> {
 
 export function fetchUniverse(adminToken: string): Promise<UniverseVersion> {
   return request<UniverseVersion>("/api/universe/current", adminToken);
+}
+
+export function refreshUniverse(adminToken: string): Promise<UniverseVersion> {
+  return request<UniverseVersion>("/api/universe/refresh", adminToken, {
+    method: "POST",
+    body: JSON.stringify({
+      fetch_market_data: true,
+      force_new_version: false
+    })
+  });
 }
 
 export function fetchRiskStatus(adminToken: string): Promise<RiskStatus> {

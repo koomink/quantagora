@@ -77,18 +77,18 @@
 
 ## Phase 5: Universe Engine
 
-- [ ] Implement candidate source from KIS market data.
-- [ ] Implement agent-recommended candidate input.
-- [ ] Add asset eligibility filter.
-- [ ] Add liquidity filter.
-- [ ] Add bid-ask spread filter.
-- [ ] Add price threshold filter.
-- [ ] Add OTC exclusion.
-- [ ] Add unsupported product exclusion.
-- [ ] Add leveraged/inverse ETF whitelist.
-- [ ] Add weekly universe versioning.
-- [ ] Add manual universe refresh API.
-- [ ] Add universe dashboard.
+- [x] Implement candidate source from KIS market data.
+- [x] Implement agent-recommended candidate input.
+- [x] Add asset eligibility filter.
+- [x] Add liquidity filter.
+- [x] Add bid-ask spread filter.
+- [x] Add price threshold filter.
+- [x] Add OTC exclusion.
+- [x] Add unsupported product exclusion.
+- [x] Add leveraged/inverse ETF whitelist.
+- [x] Add weekly universe versioning.
+- [x] Add manual universe refresh API.
+- [x] Add universe dashboard.
 
 ## Phase 6: Signal Engine
 

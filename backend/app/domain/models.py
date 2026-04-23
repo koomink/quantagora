@@ -49,6 +49,7 @@ class UniverseMember(BaseModel):
     asset: Asset
     rank: int
     rationale: str
+    eligibility: dict[str, Any] = Field(default_factory=dict)
 
 
 class UniverseVersion(BaseModel):
@@ -57,6 +58,12 @@ class UniverseVersion(BaseModel):
     version_id: str
     status: str
     members: list[UniverseMember]
+    source: str = "system"
+    generated_at: datetime | None = None
+    activated_at: datetime | None = None
+    notes: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    rejected_candidates: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class Quote(BaseModel):

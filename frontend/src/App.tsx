@@ -6,7 +6,8 @@ import {
   fetchPortfolioSummary,
   fetchRiskStatus,
   fetchRuntimeSettings,
-  fetchUniverse
+  fetchUniverse,
+  refreshUniverse
 } from "./api";
 import type {
   ApprovalList,
@@ -52,6 +53,18 @@ function formatDateTime(value?: string | null) {
   }).format(new Date(value));
 }
 
+function formatDollarMetric(value?: string | null) {
+  if (!value) return "No data";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "No data";
+  return new Intl.NumberFormat("en", {
+    currency: "USD",
+    maximumFractionDigits: 1,
+    notation: "compact",
+    style: "currency"
+  }).format(numeric);
+}
+
 function App() {
   const [adminToken, setAdminToken] = useState(() => {
     return localStorage.getItem("quantagora.adminToken") ?? "dev-admin-token";
@@ -59,6 +72,7 @@ function App() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshingUniverse, setIsRefreshingUniverse] = useState(false);
 
   const lastUpdated = useMemo(() => {
     if (!data) return "Not loaded";
@@ -87,6 +101,21 @@ function App() {
       setError(loadError instanceof Error ? loadError.message : "Unable to load dashboard.");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function handleUniverseRefresh() {
+    setIsRefreshingUniverse(true);
+    setError(null);
+    try {
+      const universe = await refreshUniverse(adminToken);
+      setData((current) => (current ? { ...current, universe } : current));
+    } catch (refreshError) {
+      setError(
+        refreshError instanceof Error ? refreshError.message : "Unable to refresh universe."
+      );
+    } finally {
+      setIsRefreshingUniverse(false);
     }
   }
 
@@ -158,6 +187,11 @@ function App() {
             <strong>{data?.approvals.items.length ?? 0}</strong>
             <small>{data?.approvals.status ?? "Loading"}</small>
           </article>
+          <article className="metric-card">
+            <span className="metric-label">Universe Assets</span>
+            <strong>{data?.universe.members.length ?? 0}</strong>
+            <small>{data?.universe.version_id ?? "Loading"}</small>
+          </article>
         </section>
 
         <section className="content-grid">
@@ -165,18 +199,33 @@ function App() {
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Active universe</p>
-                <h2>Bootstrap Watchlist</h2>
+                <h2>
+                  {data?.universe.status === "bootstrap"
+                    ? "Bootstrap Watchlist"
+                    : "Filtered Watchlist"}
+                </h2>
               </div>
-              <button className="text-button" type="button">
+              <button
+                className="text-button"
+                disabled={isRefreshingUniverse}
+                onClick={() => void handleUniverseRefresh()}
+                type="button"
+              >
                 <Icon name="refresh" />
-                Refresh
+                {isRefreshingUniverse ? "Refreshing" : "Refresh"}
               </button>
+            </div>
+            <div className="universe-summary">
+              <span>Source: {data?.universe.source ?? "system"}</span>
+              <span>Generated: {formatDateTime(data?.universe.generated_at)}</span>
+              <span>Rejected: {data?.universe.rejected_candidates.length ?? 0}</span>
             </div>
             <div className="asset-table">
               <div className="asset-row table-head">
                 <span>Rank</span>
                 <span>Symbol</span>
                 <span>Type</span>
+                <span>Liquidity</span>
                 <span>Rationale</span>
               </div>
               {data?.universe.members.map((member) => (
@@ -184,10 +233,21 @@ function App() {
                   <span>{member.rank}</span>
                   <strong>{member.asset.symbol}</strong>
                   <span>{member.asset.asset_type.replaceAll("_", " ")}</span>
+                  <span>{formatDollarMetric(member.eligibility.metrics?.avgDollarVolume)}</span>
                   <span>{member.rationale}</span>
                 </div>
               ))}
             </div>
+            {data?.universe.rejected_candidates.length ? (
+              <div className="rejection-list">
+                <span>Recently rejected</span>
+                {data.universe.rejected_candidates.slice(0, 6).map((candidate) => (
+                  <small key={candidate.symbol}>
+                    {candidate.symbol}: {candidate.reasons.join(", ")}
+                  </small>
+                ))}
+              </div>
+            ) : null}
           </article>
 
           <article className="panel">
