@@ -86,8 +86,11 @@ class Settings(BaseSettings):
     llm_provider: LlmProvider = LlmProvider.OPENAI
     llm_model: str = "gpt-5-mini"
     llm_base_url: str = ""
+    llm_timeout_seconds: float = 20.0
     openai_api_key: str = Field(default="", repr=False)
     openrouter_api_key: str = Field(default="", repr=False)
+    openrouter_site_url: str = ""
+    openrouter_app_name: str = "QuantAgora"
 
     @property
     def cors_origins_list(self) -> list[str]:

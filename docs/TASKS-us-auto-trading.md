@@ -105,16 +105,16 @@
 
 ## Phase 7: LLM Provider Layer
 
-- [ ] Add LLM provider interface.
-- [ ] Implement OpenAI provider.
-- [ ] Implement OpenRouter-compatible provider.
-- [ ] Add structured JSON response validation.
-- [ ] Add prompt templates for universe rationale.
-- [ ] Add prompt templates for trade rationale.
-- [ ] Add prompt templates for post-trade review.
-- [ ] Store LLM reports.
-- [ ] Add fallback behavior when LLM fails.
-- [ ] Ensure LLM cannot override risk decisions.
+- [x] Add LLM provider interface.
+- [x] Implement OpenAI provider.
+- [x] Implement OpenRouter-compatible provider.
+- [x] Add structured JSON response validation.
+- [x] Add prompt templates for universe rationale.
+- [x] Add prompt templates for trade rationale.
+- [x] Add prompt templates for post-trade review.
+- [x] Store LLM reports.
+- [x] Add fallback behavior when LLM fails.
+- [x] Ensure LLM cannot override risk decisions.
 
 ## Phase 8: Risk Manager
 

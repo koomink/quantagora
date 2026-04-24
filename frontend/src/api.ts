@@ -1,5 +1,7 @@
 import type {
   ApprovalList,
+  LlmReportRecord,
+  LlmReportList,
   MarketStatus,
   PortfolioSummary,
   RiskStatus,
@@ -72,6 +74,25 @@ export function scanSignals(adminToken: string): Promise<SignalList> {
     body: JSON.stringify({
       ignore_cooldown: false
     })
+  });
+}
+
+export function fetchLlmReports(adminToken: string): Promise<LlmReportList> {
+  return request<LlmReportList>("/api/llm/reports?limit=20", adminToken);
+}
+
+export function generateUniverseReport(adminToken: string): Promise<LlmReportRecord> {
+  return request<LlmReportRecord>("/api/llm/reports/universe/current", adminToken, {
+    method: "POST"
+  });
+}
+
+export function generateTradeRationale(
+  adminToken: string,
+  signalId: string
+): Promise<LlmReportRecord> {
+  return request<LlmReportRecord>(`/api/llm/reports/signals/${signalId}`, adminToken, {
+    method: "POST"
   });
 }
 

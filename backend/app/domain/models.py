@@ -29,6 +29,17 @@ class RiskDecision(str, Enum):
     BLOCK_NEW_ENTRIES = "block_new_entries"
 
 
+class LlmReportType(str, Enum):
+    UNIVERSE_RATIONALE = "universe_rationale"
+    TRADE_RATIONALE = "trade_rationale"
+    POST_TRADE_REVIEW = "post_trade_review"
+
+
+class LlmReportStatus(str, Enum):
+    GENERATED = "generated"
+    FALLBACK = "fallback"
+
+
 class Money(BaseModel):
     amount: Decimal
     currency: str = Field(min_length=3, max_length=3)
@@ -114,6 +125,58 @@ class Signal(BaseModel):
     indicators: SignalIndicators | None = None
     regime: SignalRegime | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class UniverseRationaleReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(min_length=20, max_length=700)
+    key_drivers: list[str] = Field(default_factory=list, max_length=5)
+    risk_flags: list[str] = Field(default_factory=list, max_length=5)
+    selection_discipline: str = Field(min_length=10, max_length=500)
+    uncertainty: str = Field(min_length=10, max_length=400)
+    risk_decision_locked: bool = True
+
+
+class TradeRationaleReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(min_length=20, max_length=700)
+    setup: str = Field(min_length=10, max_length=500)
+    confirmations: list[str] = Field(default_factory=list, max_length=5)
+    invalidation_focus: str = Field(min_length=10, max_length=400)
+    risk_flags: list[str] = Field(default_factory=list, max_length=5)
+    uncertainty: str = Field(min_length=10, max_length=400)
+    risk_decision_locked: bool = True
+
+
+class PostTradeReviewReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    summary: str = Field(min_length=20, max_length=700)
+    outcome: str = Field(min_length=10, max_length=400)
+    what_worked: list[str] = Field(default_factory=list, max_length=5)
+    what_to_improve: list[str] = Field(default_factory=list, max_length=5)
+    follow_ups: list[str] = Field(default_factory=list, max_length=5)
+    uncertainty: str = Field(min_length=10, max_length=400)
+    risk_decision_locked: bool = True
+
+
+class LlmReportRecord(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
+    report_id: str
+    report_type: LlmReportType
+    entity_type: str
+    entity_id: str
+    provider: str
+    model: str
+    status: LlmReportStatus
+    prompt_version: str
+    fallback_used: bool = False
+    generated_at: datetime
+    error_message: str | None = None
+    report: dict[str, Any] = Field(default_factory=dict)
 
 
 class ApprovalRequest(BaseModel):

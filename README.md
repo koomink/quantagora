@@ -25,10 +25,11 @@ Implemented so far:
 - Phase 4: market calendar and market data persistence
 - Phase 5: universe engine
 - Phase 6: signal engine
+- Phase 7: LLM provider layer and report generation
 
 Not implemented yet:
 
-- Phase 7+: LLM provider layer, risk manager execution flow, Telegram approval gate, order planner, execution service, reconciliation, tax/reporting, deployment hardening
+- Phase 8+: risk manager execution flow, Telegram approval gate, order planner, execution service, reconciliation, tax/reporting, deployment hardening
 
 ## Architecture
 
@@ -61,8 +62,10 @@ backend/app/
     universe.py
     indicators.py
     signal_engine.py
+    llm_reports.py
     scheduler.py
     risk_policy.py
+  llm/                provider abstraction, prompts, structured report validation
 ```
 
 Current frontend:
@@ -159,6 +162,20 @@ Broker and infra:
 - daily scan scheduler hook
 - signal list and detail panel in the frontend
 
+### 5. LLM Provider Layer
+
+- OpenAI provider
+- OpenRouter-compatible provider
+- strict JSON response validation with Pydantic schemas
+- prompt templates for:
+  - universe rationale
+  - trade rationale
+  - post-trade review
+- `llm_reports` persistence
+- fallback reports when provider credentials or responses fail
+- hard guard that explanation output cannot override deterministic risk decisions
+- frontend controls for generating universe and signal explanations
+
 ## API Endpoints Available
 
 Current implemented endpoints:
@@ -179,6 +196,11 @@ POST /api/universe/refresh
 
 GET  /api/signals
 POST /api/signals/scan
+
+GET  /api/llm/reports
+POST /api/llm/reports/universe/current
+POST /api/llm/reports/signals/{signal_id}
+POST /api/llm/reports/post-trade-review
 
 GET  /api/risk/status
 GET  /api/approvals
@@ -230,6 +252,19 @@ Production note:
 - Run API workers with `PROCESS_ROLE=api`.
 - Run exactly one dedicated scheduler process with `PROCESS_ROLE=scheduler` and `SIGNAL_SCHEDULER_ENABLED=true`.
 - Use `PROCESS_ROLE=all_in_one` only for single-process local runs.
+
+Optional LLM settings:
+
+```bash
+LLM_PROVIDER=openai
+OPENAI_API_KEY=...
+OPENROUTER_API_KEY=...
+LLM_MODEL=gpt-5-mini
+LLM_BASE_URL=
+LLM_TIMEOUT_SECONDS=20
+OPENROUTER_SITE_URL=
+OPENROUTER_APP_NAME=QuantAgora
+```
 
 ### 3. Run database migrations
 
@@ -294,6 +329,17 @@ Signal-related:
 - `SIGNAL_VOLATILITY_MAX_ANNUALIZED`
 - `SIGNAL_LEVERAGED_VOLATILITY_MAX_ANNUALIZED`
 
+LLM-related:
+
+- `LLM_PROVIDER`
+- `OPENAI_API_KEY`
+- `OPENROUTER_API_KEY`
+- `LLM_MODEL`
+- `LLM_BASE_URL`
+- `LLM_TIMEOUT_SECONDS`
+- `OPENROUTER_SITE_URL`
+- `OPENROUTER_APP_NAME`
+
 Market-calendar-related:
 
 - `MARKET_EXTRA_CLOSED_DATES`
@@ -313,6 +359,7 @@ Market-calendar-related:
 - Full deterministic risk checks before order creation are not implemented yet.
 - Order planning and execution orchestration are not implemented yet.
 - Tax ledger and reconciliation are not implemented yet.
+- LLM output is explanation-only and cannot change risk decisions, signal action, or position sizing.
 - Signal logic is MVP-level and should be treated as an initial framework, not a validated production strategy.
 - Calendar logic is rule-based with override settings, not yet sourced from a live exchange calendar feed.
 - KIS live end-to-end behavior has not yet been fully smoke-tested against a real account in this repository flow.

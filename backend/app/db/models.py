@@ -219,6 +219,55 @@ class Signal(Base):
     )
 
 
+class LLMReport(Base):
+    __tablename__ = "llm_reports"
+
+    id: Mapped[UUID] = uuid_pk_column()
+    signal_id: Mapped[UUID | None] = mapped_column(sa.ForeignKey("signals.id"), index=True)
+    universe_version_id: Mapped[UUID | None] = mapped_column(
+        sa.ForeignKey("asset_universe_versions.id"),
+        index=True,
+    )
+    report_type: Mapped[str] = mapped_column(sa.String(32), nullable=False, index=True)
+    entity_type: Mapped[str] = mapped_column(sa.String(32), nullable=False, index=True)
+    entity_id: Mapped[str] = mapped_column(sa.String(128), nullable=False, index=True)
+    provider: Mapped[str] = mapped_column(sa.String(32), nullable=False)
+    model: Mapped[str] = mapped_column(sa.String(128), nullable=False)
+    status: Mapped[str] = mapped_column(sa.String(24), nullable=False, server_default="generated")
+    prompt_version: Mapped[str] = mapped_column(sa.String(32), nullable=False)
+    fallback_used: Mapped[bool] = mapped_column(
+        sa.Boolean,
+        nullable=False,
+        server_default=sa.false(),
+    )
+    error_message: Mapped[str | None] = mapped_column(sa.Text)
+    report_json: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=JSON_OBJECT_DEFAULT,
+    )
+    request_payload: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=JSON_OBJECT_DEFAULT,
+    )
+    response_payload: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=JSON_OBJECT_DEFAULT,
+    )
+    generated_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        nullable=False,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        nullable=False,
+    )
+
+
 class RiskCheck(Base):
     __tablename__ = "risk_checks"
 

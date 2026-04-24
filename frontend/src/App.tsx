@@ -2,17 +2,22 @@ import { useEffect, useMemo, useState } from "react";
 
 import {
   fetchApprovals,
+  fetchLlmReports,
   fetchMarketStatus,
   fetchPortfolioSummary,
   fetchRiskStatus,
   fetchRuntimeSettings,
   fetchSignals,
   scanSignals,
+  generateTradeRationale,
+  generateUniverseReport,
   fetchUniverse,
   refreshUniverse
 } from "./api";
 import type {
   ApprovalList,
+  LlmReportList,
+  LlmReportRecord,
   MarketStatus,
   PortfolioSummary,
   RiskStatus,
@@ -28,6 +33,7 @@ type DashboardData = {
   portfolio: PortfolioSummary;
   universe: UniverseVersion;
   signals: SignalList;
+  llm: LlmReportList;
   risk: RiskStatus;
   approvals: ApprovalList;
 };
@@ -89,6 +95,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshingUniverse, setIsRefreshingUniverse] = useState(false);
   const [isScanningSignals, setIsScanningSignals] = useState(false);
+  const [isGeneratingUniverseReport, setIsGeneratingUniverseReport] = useState(false);
+  const [isGeneratingTradeReport, setIsGeneratingTradeReport] = useState(false);
   const [selectedSignalId, setSelectedSignalId] = useState<string | null>(null);
 
   const lastUpdated = useMemo(() => {
@@ -104,21 +112,24 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const [signals, runtime, market, portfolio, universe, risk, approvals] = await Promise.all([
+      const [signals, runtime, market, portfolio, universe, llm, risk, approvals] =
+        await Promise.all([
         fetchSignals(nextToken),
         fetchRuntimeSettings(nextToken),
         fetchMarketStatus(nextToken),
         fetchPortfolioSummary(nextToken),
         fetchUniverse(nextToken),
+        fetchLlmReports(nextToken),
         fetchRiskStatus(nextToken),
         fetchApprovals(nextToken)
-      ]);
+        ]);
       setData({
         runtime,
         market,
         portfolio,
         universe,
         signals,
+        llm,
         risk,
         approvals
       });
@@ -160,6 +171,47 @@ function App() {
     }
   }
 
+  async function handleUniverseReport() {
+    setIsGeneratingUniverseReport(true);
+    setError(null);
+    try {
+      const report = await generateUniverseReport(adminToken);
+      setData((current) =>
+        current
+          ? { ...current, llm: { ...current.llm, items: [report, ...current.llm.items] } }
+          : current
+      );
+    } catch (reportError) {
+      setError(
+        reportError instanceof Error
+          ? reportError.message
+          : "Unable to generate universe explanation."
+      );
+    } finally {
+      setIsGeneratingUniverseReport(false);
+    }
+  }
+
+  async function handleTradeReport() {
+    if (!selectedSignal) return;
+    setIsGeneratingTradeReport(true);
+    setError(null);
+    try {
+      const report = await generateTradeRationale(adminToken, selectedSignal.signalId);
+      setData((current) =>
+        current
+          ? { ...current, llm: { ...current.llm, items: [report, ...current.llm.items] } }
+          : current
+      );
+    } catch (reportError) {
+      setError(
+        reportError instanceof Error ? reportError.message : "Unable to generate trade explanation."
+      );
+    } finally {
+      setIsGeneratingTradeReport(false);
+    }
+  }
+
   useEffect(() => {
     void loadDashboard();
   }, []);
@@ -171,6 +223,21 @@ function App() {
       data.signals.items[0]
     );
   }, [data?.signals.items, selectedSignalId]);
+
+  const latestUniverseReport = useMemo<LlmReportRecord | null>(() => {
+    if (!data?.llm.items.length) return null;
+    return data.llm.items.find((report) => report.report_type === "universe_rationale") ?? null;
+  }, [data?.llm.items]);
+
+  const selectedSignalReport = useMemo<LlmReportRecord | null>(() => {
+    if (!data?.llm.items.length || !selectedSignal) return null;
+    return (
+      data.llm.items.find(
+        (report) =>
+          report.report_type === "trade_rationale" && report.entity_id === selectedSignal.signalId
+      ) ?? null
+    );
+  }, [data?.llm.items, selectedSignal]);
 
   return (
     <main className="shell">
@@ -269,6 +336,17 @@ function App() {
                 {isRefreshingUniverse ? "Refreshing" : "Refresh"}
               </button>
             </div>
+            <div className="panel-actions">
+              <button
+                className="text-button"
+                disabled={isGeneratingUniverseReport}
+                onClick={() => void handleUniverseReport()}
+                type="button"
+              >
+                <Icon name="bolt" />
+                {isGeneratingUniverseReport ? "Explaining" : "Explain"}
+              </button>
+            </div>
             <div className="universe-summary">
               <span>Source: {data?.universe.source ?? "system"}</span>
               <span>Generated: {formatDateTime(data?.universe.generated_at)}</span>
@@ -300,6 +378,31 @@ function App() {
                     {candidate.symbol}: {candidate.reasons.join(", ")}
                   </small>
                 ))}
+              </div>
+            ) : null}
+            {latestUniverseReport ? (
+              <div className="report-card">
+                <div className="report-header">
+                  <strong>Universe Explanation</strong>
+                  <span className={latestUniverseReport.fallback_used ? "report-badge fallback" : "report-badge"}>
+                    {latestUniverseReport.status}
+                  </span>
+                </div>
+                <p>{latestUniverseReport.report.summary}</p>
+                <div className="report-grid">
+                  <span>Key drivers</span>
+                  <strong>
+                    {(latestUniverseReport.report.key_drivers ?? []).join(" | ") || "N/A"}
+                  </strong>
+                  <span>Risk flags</span>
+                  <strong>
+                    {(latestUniverseReport.report.risk_flags ?? []).join(" | ") || "None"}
+                  </strong>
+                  <span>Discipline</span>
+                  <strong>{latestUniverseReport.report.selection_discipline ?? "N/A"}</strong>
+                  <span>Uncertainty</span>
+                  <strong>{latestUniverseReport.report.uncertainty ?? "N/A"}</strong>
+                </div>
               </div>
             ) : null}
           </article>
@@ -400,6 +503,17 @@ function App() {
             </div>
             {selectedSignal ? (
               <div className="signal-detail">
+                <div className="panel-actions">
+                  <button
+                    className="text-button"
+                    disabled={isGeneratingTradeReport}
+                    onClick={() => void handleTradeReport()}
+                    type="button"
+                  >
+                    <Icon name="bolt" />
+                    {isGeneratingTradeReport ? "Explaining" : "Explain"}
+                  </button>
+                </div>
                 <div className="signal-detail-top">
                   <strong>{selectedSignal.symbol}</strong>
                   <span>{selectedSignal.strategy.replaceAll("_", " ")}</span>
@@ -436,6 +550,31 @@ function App() {
                   <small>{selectedSignal.invalidation}</small>
                   <small>{selectedSignal.regime.reason ?? "No regime note."}</small>
                 </div>
+                {selectedSignalReport ? (
+                  <div className="report-card">
+                    <div className="report-header">
+                      <strong>Trade Explanation</strong>
+                      <span className={selectedSignalReport.fallback_used ? "report-badge fallback" : "report-badge"}>
+                        {selectedSignalReport.status}
+                      </span>
+                    </div>
+                    <p>{selectedSignalReport.report.summary}</p>
+                    <div className="report-grid">
+                      <span>Setup</span>
+                      <strong>{selectedSignalReport.report.setup ?? "N/A"}</strong>
+                      <span>Confirmations</span>
+                      <strong>
+                        {(selectedSignalReport.report.confirmations ?? []).join(" | ") || "N/A"}
+                      </strong>
+                      <span>Risk flags</span>
+                      <strong>
+                        {(selectedSignalReport.report.risk_flags ?? []).join(" | ") || "None"}
+                      </strong>
+                      <span>Uncertainty</span>
+                      <strong>{selectedSignalReport.report.uncertainty ?? "N/A"}</strong>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className="empty-state">Select a candidate to inspect its signal details.</div>

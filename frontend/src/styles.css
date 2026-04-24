@@ -251,6 +251,12 @@ h2 {
   margin-bottom: 18px;
 }
 
+.panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px 0 12px;
+}
+
 .panel-header.compact {
   margin-bottom: 14px;
 }
@@ -428,6 +434,49 @@ h2 {
 }
 
 .signal-meta-grid span {
+  color: #607066;
+}
+
+.report-card {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid #e2e8e3;
+  margin-top: 12px;
+  padding-top: 14px;
+}
+
+.report-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.report-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 8px;
+  background: #ecf4ef;
+  color: #173f35;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0 10px;
+  text-transform: capitalize;
+}
+
+.report-badge.fallback {
+  background: #fff0ed;
+  color: #8d2f1f;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 14px;
+}
+
+.report-grid span {
   color: #607066;
 }
 

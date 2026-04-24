@@ -121,6 +121,40 @@ export type SignalList = {
   };
 };
 
+export type LlmReportRecord = {
+  report_id: string;
+  report_type: string;
+  entity_type: string;
+  entity_id: string;
+  provider: string;
+  model: string;
+  status: string;
+  prompt_version: string;
+  fallback_used: boolean;
+  generated_at: string;
+  error_message: string | null;
+  report: {
+    summary?: string;
+    key_drivers?: string[];
+    risk_flags?: string[];
+    selection_discipline?: string;
+    uncertainty?: string;
+    setup?: string;
+    confirmations?: string[];
+    invalidation_focus?: string;
+    outcome?: string;
+    what_worked?: string[];
+    what_to_improve?: string[];
+    follow_ups?: string[];
+    risk_decision_locked?: boolean;
+  };
+};
+
+export type LlmReportList = {
+  items: LlmReportRecord[];
+  status: string;
+};
+
 export type RiskStatus = {
   state: string;
   newEntriesAllowed: boolean;
