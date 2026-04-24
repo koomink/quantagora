@@ -206,6 +206,7 @@ Copy `.env.example` to `.env` and fill at least:
 
 ```bash
 DATABASE_URL=postgresql+psycopg://...
+PROCESS_ROLE=api
 ADMIN_API_TOKEN=...
 
 KIS_APP_KEY=...
@@ -219,9 +220,16 @@ Optional signal scheduler settings:
 
 ```bash
 SIGNAL_SCHEDULER_ENABLED=false
+PROCESS_ROLE=api
 SIGNAL_SCAN_HOUR_UTC=21
 SIGNAL_SCAN_MINUTE_UTC=15
 ```
+
+Production note:
+
+- Run API workers with `PROCESS_ROLE=api`.
+- Run exactly one dedicated scheduler process with `PROCESS_ROLE=scheduler` and `SIGNAL_SCHEDULER_ENABLED=true`.
+- Use `PROCESS_ROLE=all_in_one` only for single-process local runs.
 
 ### 3. Run database migrations
 

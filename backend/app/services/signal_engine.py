@@ -4,7 +4,6 @@ from decimal import ROUND_HALF_UP, Decimal
 from typing import Any
 
 import sqlalchemy as sa
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
@@ -68,15 +67,13 @@ class SignalEngine:
 
     def list_signals(self, *, limit: int = 20) -> list[dict[str, Any]]:
         now = datetime.now(UTC)
-        try:
-            self._expire_stale_signals(now)
-            rows = self.db.scalars(
-                sa.select(SignalRow).order_by(SignalRow.generated_at.desc()).limit(limit)
-            ).all()
-            return [_serialize_signal_row(row) for row in rows]
-        except SQLAlchemyError:
-            self.db.rollback()
-            return []
+        expired_count = self._expire_stale_signals(now)
+        if expired_count > 0:
+            self.db.commit()
+        rows = self.db.scalars(
+            sa.select(SignalRow).order_by(SignalRow.generated_at.desc()).limit(limit)
+        ).all()
+        return [_serialize_signal_row(row) for row in rows]
 
     def scan_active_universe(self, *, ignore_cooldown: bool = False) -> SignalScanResult:
         generated_at = datetime.now(UTC)
@@ -123,8 +120,8 @@ class SignalEngine:
             skipped=skipped,
         )
 
-    def _expire_stale_signals(self, now: datetime) -> None:
-        self.db.execute(
+    def _expire_stale_signals(self, now: datetime) -> int:
+        result = self.db.execute(
             sa.update(SignalRow)
             .where(
                 SignalRow.status == "new",
@@ -133,6 +130,7 @@ class SignalEngine:
             .values(status="expired")
         )
         self.db.flush()
+        return int(result.rowcount or 0)
 
     def _build_regime(self, members: list[Any]) -> SignalRegime:
         benchmark_symbol = "SPY"

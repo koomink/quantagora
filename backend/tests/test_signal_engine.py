@@ -1,11 +1,17 @@
 from datetime import UTC, datetime, timedelta
 from math import sin
+from types import SimpleNamespace
+from unittest.mock import Mock
 
-from app.core.config import Settings
+import pytest
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.core.config import ProcessRole, Settings
 from app.domain.models import Asset, AssetType
 from app.domain.models import SignalRegime as DomainSignalRegime
 from app.services.indicators import macd, roc, rsi, sma
-from app.services.signal_engine import PriceBar, evaluate_signal_candidate
+from app.services.scheduler import start_scheduler
+from app.services.signal_engine import PriceBar, SignalEngine, evaluate_signal_candidate
 
 
 def _bars_from_closes(closes: list[float]) -> list[PriceBar]:
@@ -118,3 +124,55 @@ def test_no_signal_is_generated_for_flat_series() -> None:
     )
 
     assert candidate is None
+
+
+def test_list_signals_commits_expired_status_updates() -> None:
+    now = datetime(2026, 4, 25, tzinfo=UTC)
+    session = Mock()
+    session.execute.return_value = SimpleNamespace(rowcount=2)
+    session.scalars.return_value.all.return_value = [
+        SimpleNamespace(
+            id="signal-1",
+            symbol="QQQ",
+            action="buy",
+            horizon="swing",
+            confidence=0.71,
+            target_weight=0.12,
+            source="signal_engine",
+            status="expired",
+            rationale="Test rationale",
+            invalidation="Test invalidation",
+            generated_at=now - timedelta(days=2),
+            expires_at=now - timedelta(days=1),
+            input_snapshot={"strategy": "pullback", "indicators": {}, "regime": {}, "metadata": {}},
+        )
+    ]
+
+    items = SignalEngine(db=session, settings=Settings()).list_signals(limit=10)
+
+    assert len(items) == 1
+    session.commit.assert_called_once()
+
+
+def test_list_signals_surfaces_database_errors() -> None:
+    session = Mock()
+    session.execute.return_value = SimpleNamespace(rowcount=0)
+    session.scalars.side_effect = SQLAlchemyError("db down")
+
+    with pytest.raises(SQLAlchemyError):
+        SignalEngine(db=session, settings=Settings()).list_signals(limit=10)
+
+
+def test_scheduler_does_not_start_inside_api_role(monkeypatch: pytest.MonkeyPatch) -> None:
+    fake_scheduler_factory = Mock()
+    monkeypatch.setattr(
+        "app.services.scheduler.get_settings",
+        lambda: Settings(signal_scheduler_enabled=True, process_role=ProcessRole.API),
+    )
+    monkeypatch.setattr("app.services.scheduler.BackgroundScheduler", fake_scheduler_factory)
+    app = SimpleNamespace(state=SimpleNamespace())
+
+    start_scheduler(app)
+
+    assert app.state.scheduler is None
+    fake_scheduler_factory.assert_not_called()

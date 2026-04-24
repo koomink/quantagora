@@ -22,6 +22,12 @@ class LlmProvider(str, Enum):
     OPENROUTER = "openrouter"
 
 
+class ProcessRole(str, Enum):
+    API = "api"
+    SCHEDULER = "scheduler"
+    ALL_IN_ONE = "all_in_one"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -30,6 +36,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     admin_api_token: str = "dev-admin-token"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    process_role: ProcessRole = ProcessRole.API
 
     database_url: str = "postgresql+psycopg://quantagora:quantagora@localhost:5432/quantagora"
 

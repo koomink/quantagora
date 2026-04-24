@@ -28,7 +28,14 @@ def list_signals(
     limit: LimitQuery = 20,
 ) -> dict[str, object]:
     engine = SignalEngine(db=db, settings=settings)
-    items = engine.list_signals(limit=limit)
+    try:
+        items = engine.list_signals(limit=limit)
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Signal listing requires a reachable trading database.",
+        ) from exc
     active_count = sum(1 for item in items if item["status"] == "new")
     return {
         "items": items,

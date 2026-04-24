@@ -4,7 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from fastapi import FastAPI
 
-from app.core.config import get_settings
+from app.core.config import ProcessRole, get_settings
 from app.db.session import SessionLocal
 from app.services.signal_engine import SignalEngine
 
@@ -15,6 +15,16 @@ def start_scheduler(app: FastAPI) -> None:
     settings = get_settings()
     if not settings.signal_scheduler_enabled:
         app.state.scheduler = None
+        return
+    # In multi-worker API deployments, the scheduler must run in exactly one dedicated process.
+    if settings.process_role not in {ProcessRole.SCHEDULER, ProcessRole.ALL_IN_ONE}:
+        app.state.scheduler = None
+        logger.info(
+            "Signal scheduler is enabled but not started in process_role=%s. "
+            "Run a single dedicated scheduler process with PROCESS_ROLE=scheduler "
+            "or explicitly use PROCESS_ROLE=all_in_one only for single-process local runs.",
+            settings.process_role.value,
+        )
         return
 
     scheduler = BackgroundScheduler(timezone="UTC")
